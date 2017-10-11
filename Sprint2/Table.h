@@ -11,20 +11,20 @@
 
 /* FICHIER EN TETE POUR TABLE DONNEES*/
 
-// strcuture pour stocker les enregistrements
+// Strcuture pour stocker les enregistrements
 typedef struct {
 	char	nomEnregistrement[lgMot];
 	char	enregistrement[max_champs][lgMot];
 }Donnees;
 
 
-// structure pour stocker les informations des champs
+// Structure pour stocker les informations des champs
 typedef	struct {
 	char champNom[lgMot + 1];
 	char champType[lgMot + 1];
 }Champ;
 
-//structure pour stocker la table de données, ses champs et ses informations
+// Structure pour stocker la table de données, ses champs et ses informations
 typedef struct {
 	char	nom[lgMot + 1];
 	Donnees	reg[max_reg];

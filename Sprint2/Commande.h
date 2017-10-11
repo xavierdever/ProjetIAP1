@@ -6,7 +6,7 @@
 
 /* FICHIER EN TETE INFORMATIONS COMMAND*/
 
-// structure pour stocker les informations
+// Structure pour stocker les informations
 
 typedef struct {
 	char	nomTable[lgMot + 1];
