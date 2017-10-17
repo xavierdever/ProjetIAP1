@@ -1,13 +1,12 @@
 #pragma once
-#pragma once
 #ifndef COMMANDE_H
 #define COMMANDE_H
 
-#include "TableSp1.h"
+#include "TableSp3.h"
 
 /* FICHIER EN TETE INFORMATIONS COMMAND*/
 
-// structure pour stocker les informations
+// Structure pour stocker les informations
 
 typedef struct {
 	char	nomTable[lgMot + 1];

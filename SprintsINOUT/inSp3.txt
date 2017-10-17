@@ -1,4 +1,4 @@
-Create_table Pays 5 nom TEXT  pib INT capitale TEXT latitude FLOAT longitude FLOAT
+Create_table Pays 5 nom TEXT pib INT capitale TEXT latitude FLOAT longitude FLOAT
 Afficher_schema Pays
 Insert_enregistrement Pays Turquie 10946 Ankara 39.92 32.86
 Insert_enregistrement Pays Chine 6807 Pekin 39.92 116.44

@@ -3,12 +3,12 @@
 #include <string.h>	
 #include <stdbool.h>
 #include <io.h>
-#include "Commande.h"
-#include "Table.h"
+#include "CommandeSp1.h"
+#include "TableSp1.h"
 #pragma warning(disable: 4996)
 
 //fonction d'insertion des données dans la table
-Table	*create_table(Table* data, Commande* info) {
+void create_table(Table* data, Commande* info) {
 	unsigned int	cpt, sch; // cpt pour les deux informations par champs , sch pour se deplacer dans les champs
 
 	strcpy(data->nom, info->nomTable);										// copie du nom de la table recu en commande 
@@ -19,7 +19,6 @@ Table	*create_table(Table* data, Commande* info) {
 		strcpy(data->schema[sch].champNom, info->champs[cpt]);				// copie du nom du champs
 		strcpy(data->schema[sch].champType, info->champs[cpt + 1]);			// copie du type du champs
 	}
-	return (data);															// renvoi de la table de donnée chargée
 }
 
 //fonction d'affichage de la table de données
@@ -40,8 +39,7 @@ int	afficher_schema(const Table *data, const char nomTable[lgMot]) {
 	return 0;
 }
 
-
-Commande*	recup_commande(Commande* info, char command[lgMax]) {
+void recup_commande(Commande* info, char command[lgMax]) {
 	unsigned int i, k = 0, j = 0;				// i pour parcourir l'entree utilisateur dans la boucle l.44, k indique les colonnes de la table champs, j indique les ligne de cette table
 
 												// boucle de parcourt de l'entree utilisateur
@@ -62,43 +60,37 @@ Commande*	recup_commande(Commande* info, char command[lgMax]) {
 	info->champs[j][k] = '\0';
 	strcpy(info->nomTable, info->champs[1]);
 	info->NbChps = j + 1;
-	return (info);
 }
 
 /* FONCTION PRINCIPALE */
 
 int main() {
-	Table*		data;			// déclaration d'un pointeur sur Table (structure)
-	Commande*	info;			// déclaration d'un pointeur sur Commande (structure)
-	char	command[lgMax];		// déclation d'un tableau de char stocker la commande
+	Table		data;			// déclaration d'une variable structurée de type Table
+	Commande	info;			// déclaration d'une variable de type Commande
+	char	command[lgMax];		// déclation d'un tableau de char pour stocker la commande
 	int		ret;				// ret pour le strcmp()
 	_Bool	exist = false; 		// booléen pour existence d'une table
-
-
-								//allocation mémoire
-	data = malloc(sizeof(Table));
-	info = malloc(sizeof(Commande));
 
 	// démarage de la boucle infinie pour l'interpréteur de commande
 	while (1) {
 		gets(command);							// recupération de la commande
-		info = recup_commande(info, command);	// traitement de la commande
+		recup_commande(&info, command);			// traitement de la commande
 												//conditions pour vérifier quelle fonctions éxécuter
-		if ((ret = strcmp(info->champs[0], "Create_table")) == 0) {
+		if ((ret = strcmp(info.champs[0], "Create_table")) == 0) {
 			//vérification non existence de la table
-			if (data->nom != NULL && ((ret = strcmp(info->champs[1], data->nom)) == 0) || exist == true) {
+			if (data.nom != NULL && ((ret = strcmp(info.champs[1], data.nom)) == 0) || exist == true) {
 				printf("Table existante\n");
 				continue;
 			}
-			data = create_table(data, info);
+			create_table(&data, &info);
 			exist = true;
 		}
 		//affichage de la table
-		else if ((ret = strcmp(info->champs[0], "Afficher_schema")) == 0) {
-			afficher_schema(data, info->champs[1]);
+		else if ((ret = strcmp(info.champs[0], "Afficher_schema")) == 0) {
+			afficher_schema(&data, info.champs[1]);
 		}
 		//sortie du gestionnaire
-		else if ((ret = strcmp(info->champs[0], "Exit")) == 0) {
+		else if ((ret = strcmp(info.champs[0], "Exit")) == 0) {
 			exit(0);
 		}
 	}
