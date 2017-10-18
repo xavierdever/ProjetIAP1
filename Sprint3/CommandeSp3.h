@@ -14,6 +14,6 @@ typedef struct {
 	char	champs[max_champs][lgMot + 1];
 }Commande;
 
-void recup_commande(Commande* info, char command[lgMax]);
+void recup_commande(Commande* info, const char command[lgMax]);
 
 #endif COMMAND_H

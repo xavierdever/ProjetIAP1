@@ -2,19 +2,24 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
-#include <io.h>
 #include "CommandeSp3.h"
 #include "TableSp3.h"
 #pragma warning(disable: 4996)
 
-void delete_enregistrement(Table* data, int nb_reg, Commande* info) {
+// Fonction de suppression d'un enregistrement
+// [in] data -> table de donnée stockant les enregistrements
+// [in] info -> informations sur la commande
+void delete_enregistrement(Table* data, int nb_reg, const Commande* info) {
 	int tmp = atoi(info->champs[2]) - 1;
 	for (tmp; tmp < nb_reg; tmp++) {
 		data->reg[tmp] = data->reg[tmp + 1];
 	}
 }
 
-void afficher_enregistrement(Table *data, Commande *info) {
+//	Fonction d'affichage d'un seul enregistrement
+// [in] data -> table de donnée stockant les enregistrements
+// [in] info -> informations sur la commande
+void afficher_enregistrement(const Table *data, const Commande *info) {
 	int	reg_num;
 
 	reg_num = atoi(info->champs[2]);
@@ -27,15 +32,21 @@ void afficher_enregistrement(Table *data, Commande *info) {
 }
 
 //	Fonction d'insertion de l'enregistrement
-void *insert_enregistrement(Commande *info, Table *data, int nb_reg) {
+// [in-out] data -> table de donnée qui va stocker les enregistrements
+// [in] info -> informations séparées de la commande
+void insert_enregistrement(const Commande *info, Table *data, const int nb_reg) {
 	for (unsigned int i = 2, j = 0; i < info->NbChps; ++i, ++j) {
 		strcpy(data->reg[nb_reg].enregistrement[j], info->champs[i]);
 	}
-	strcpy(data->reg[nb_reg].nomEnregistrement, data->reg[nb_reg].enregistrement[0]);
+	strcpy(data->reg[nb_reg].nomEnregistrement,
+		data->reg[nb_reg].enregistrement[0]);
 }
 
 // Fonction d'affichage de l'enregistrement
-void afficher_enregistrements(Table* data, int nb_reg) {
+// [in] data -> table donnée stockant les enregistrements
+// [in] nb_reg -> nombre total d'enregistrements actuels
+
+void afficher_enregistrements(const Table* data, const int nb_reg) {
 	for (int tmp = 0; tmp < nb_reg; tmp++) {								// tmp sert a enumerer les enregistrements, nb_reg etant le nombre d'enregistrements
 		printf("%d ", tmp + 1);
 		for (int aux = 0; aux < data->nbChamps; aux++) {					// aux sert a enumerer les champs a afficher
@@ -47,22 +58,28 @@ void afficher_enregistrements(Table* data, int nb_reg) {
 }
 
 // Fonction d'insertion des données dans la table
+// [in-out] data -> table donnée qui va être "remplie"
+// [in] info -> informations séparées de la commande
 
-void *create_table(Table* data, Commande* info) {
-	unsigned int	cpt, sch;												// cpt pour les deux informations par champs , sch pour se deplacer dans les champs
+void	create_table(Table* data, const Commande* info) {
+	unsigned int	cpt, sch, ret;											// cpt pour les deux informations par champs , sch pour se deplacer dans les champs
 
+	if (data->nom != NULL && ((ret = strcmp(info->champs[1], data->nom)) == 0)) { // Vérification non existence de la table
+		printf("Table existante\n");
+		return;
+	}
 	strcpy(data->nom, info->nomTable);										// Copie du nom de la table recu en commande 
 	data->nbChamps = atoi(info->champs[2]);									// Copie du nombre de champs recu en commande
-
-																			// Boucle for pour remplir le tableau de structure Schema
-	for (cpt = 3, sch = 0; cpt < info->NbChps; cpt += 2, sch += 1) {
+	for (cpt = 3, sch = 0; cpt < info->NbChps; cpt += 2, sch += 1) {		// Boucle for pour remplir le tableau de structure Schema
 		strcpy(data->schema[sch].champNom, info->champs[cpt]);				// Copie du nom du champs
 		strcpy(data->schema[sch].champType, info->champs[cpt + 1]);			// Copie du type du champs
-	}													// Renvoi de la table de donnée chargée
+	}
 }
 
 // Fonction d'affichage de la table de données
-int afficher_schema(Table *data, char nomTable[lgMot]) {
+// [in] data -> table de donnée
+// [in] nomTable -> nom de la table à afficher
+int afficher_schema(const Table *data, const char nomTable[lgMot]) {
 	unsigned int i, ret;													// i pour les schema, ret pour le strcmp()
 																			// Verification de l'existence de la table
 	if ((ret = strcmp(data->nom, nomTable)) != 0) {
@@ -77,8 +94,10 @@ int afficher_schema(Table *data, char nomTable[lgMot]) {
 	return 0;
 }
 
-
-void recup_commande(Commande* info, char command[lgMax]) {
+// Fonction de récupération de la commande et de séparation des informations
+// [in-out] info -> informations sur la commandes
+// [in] command -> commande récupérée depuis l'entrée standard
+void recup_commande(Commande* info, const char command[lgMax]) {
 	unsigned int i, k = 0, j = 0;											// i pour parcourir l'entree utilisateur dans la boucle l.44, k indique les colonnes de la table champs, j indique les ligne de cette table
 																			// Boucle de parcourt de l'entree utilisateur
 	for (i = 0; i < strlen(command); i++) {
@@ -88,10 +107,8 @@ void recup_commande(Commande* info, char command[lgMax]) {
 			k = 0;															// Mise a zero de k pour ecrire a partir de la premiere colonne de champs							
 			j++;															// Incrementation de j pour changer de ligne dans la table champs
 		}
-
-																			// Copie du caractere dans la table champs dans le cas où le caractere lu n'est pas un espace
 		else {
-			info->champs[j][k] = command[i];
+			info->champs[j][k] = command[i];								// Copie du caractere dans la table champs dans le cas où le caractere lu n'est pas un espace
 			k++;
 		}
 	}
@@ -116,13 +133,7 @@ int main() {
 		gets(command);														// Recupération de la commande
 		recup_commande(&info, command);										// Traitement de la commande
 		// Conditions pour vérifier quelle fonctions éxécuter
-		if ((ret = strcmp(info.champs[0], "Create_table")) == 0) {
-
-			// Vérification non existence de la table
-			if (data.nom != NULL && ((ret = strcmp(info.champs[1], data.nom)) == 0) || exist == true) {
-				printf("Table existante\n");
-				continue;
-			}
+		if ((ret = strcmp(info.champs[0], "Create_table")) == 0 && exist != true) {
 			create_table(&data, &info);
 			exist = true;
 		}
