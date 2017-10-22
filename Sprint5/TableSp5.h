@@ -10,8 +10,16 @@
 
 /* FICHIER EN TETE POUR TABLE DONNEES*/
 
+// Structure pour stocker une date
+typedef struct {
+	unsigned int jour;
+	unsigned int mois;
+	int			année;
+}Date;
+
 // Strcuture pour stocker les enregistrements
 typedef struct {
+	Date	date[max_champs];
 	char	nomEnregistrement[lgMot];
 	char	enregistrement[max_champs][lgMot];
 }Donnees;
@@ -32,4 +40,3 @@ typedef struct {
 }Table;
 
 #endif TABLE_H
-
