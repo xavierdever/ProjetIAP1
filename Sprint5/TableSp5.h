@@ -37,6 +37,7 @@ typedef struct {
 	Donnees	reg[max_reg];
 	Champ	schema[max_champs];
 	unsigned int nbChamps;
+	int		nb_reg;
 }Table;
 
 #endif TABLE_H
