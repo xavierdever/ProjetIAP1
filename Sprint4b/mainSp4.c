@@ -168,6 +168,9 @@ int main() {
 		else if ((ret = strcmp(info.champs[0], "Delete_table")) == 0) {
 			exist = delete_table(&data);
 		}
+		else if ((ret = strcmp(info.champs[0], "Select_enregistrement")) == 0) {
+			select_enregistrement(&data, &info);
+		}
 		// Sortie du gestionnaire
 		else if ((ret = strcmp(info.champs[0], "Exit")) == 0) {
 			exit(0);

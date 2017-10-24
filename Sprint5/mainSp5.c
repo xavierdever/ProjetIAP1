@@ -10,6 +10,60 @@ Groupe :				Date de création :
 
 #pragma warning(disable: 4996)
 
+typedef enum {DATE, FLOAT, INT, TEXT, ERR}Type;
+
+
+void	select_date(Table* data, Commande* info) {
+
+	for (unsigned int d = 0; d < data->nb_reg; d++) {
+
+	}
+}
+
+Type	get_type(char nomChamps[lgMot+1], Table* data) {
+
+	for (unsigned int i = 0; i < data->nbChamps; ++i) {
+		if (strcmp(nomChamps, data->schema[i].champNom) == 0) {
+			if (strcmp(data->schema[i].champType, "DATE") == 0) {
+				return DATE;
+			}
+			else if (strcmp(data->schema[i].champType, "TEXT") == 0) {
+				return TEXT;
+			}
+			else if (strcmp(data->schema[i].champType, "INT") == 0) {
+				return INT;
+			}
+			else if (strcmp(data->schema[i].champType, "FLOAT") == 0) {
+				return FLOAT;
+			}
+		}
+	}
+	return ERR;
+}
+
+void select_enregistrement(Table* data, Commande* info) {
+	Type	ret;
+
+	ret = get_type(info->champs[2], data);
+	switch (ret) {
+		case DATE:
+			select_date(data, info);
+			break;
+		case TEXT:
+			printf("type text\n");
+			break;
+		case INT:
+			printf("type INT\n");
+			break;
+		case FLOAT:
+			printf("type FLOAT\n");
+			break;
+		default:
+			printf("err\n");
+			break;
+	}
+}
+
 // Fonction de suppression d'un enregistrement
 // [in] data -> table de donnée stockant les enregistrements
 // [in] info -> informations sur la commande
@@ -137,24 +191,32 @@ int afficher_schema(const Table *data, const char nomTable[lgMot]) {
 // [in-out] info -> informations sur la commandes
 // [in] command -> commande récupérée depuis l'entrée standard
 void recup_commande(Commande* info, const char command[lgMax]) {
-	unsigned int i, k = 0, j = 0;											// i pour parcourir l'entree utilisateur dans la boucle l.44, k indique les colonnes de la table champs, j indique les ligne de cette table
-																			// Boucle de parcourt de l'entree utilisateur
+	unsigned int i, k = 0, j = 0;				// i pour parcourir l'entree utilisateur dans la boucle l.44, k indique les colonnes de la table champs, j indique les ligne de cette table
+
+												// boucle de parcourt de l'entree utilisateur
 	for (i = 0; i < strlen(command); i++) {
-		// Separation des arguments de l'entree utilisateur par les espaces
+		// separation des arguments de l'entree utilisateur par les espaces
 		if (command[i] == ' ') {
-			info->champs[j][k] = '\0';										// Ajout d'un signal de fin de chaine de caractere
-			k = 0;															// Mise a zero de k pour ecrire a partir de la premiere colonne de champs							
-			j++;															// Incrementation de j pour changer de ligne dans la table champs
+			while (command[i] == ' ' && command[i + 1] == ' ')
+				i++;
+			info->champs[j][k] = '\0';			// ajout d'un signal de fin de chaine de caractere
+			k = 0;								// mise a zero de k pour ecrire a partir de la premiere colonne de champs							
+			j++;								// incrementation de j pour changer de ligne dans la table champs
 		}
+
+		// copie du caractere dans la table champs dans le cas où le caractere lu n'est pas un espace
 		else {
-			info->champs[j][k] = command[i];								// Copie du caractere dans la table champs dans le cas où le caractere lu n'est pas un espace
+			info->champs[j][k] = command[i];
 			k++;
 		}
 	}
 	info->champs[j][k] = '\0';
 	strcpy(info->nomTable, info->champs[1]);
 	info->NbChps = j + 1;
-	return;
+}
+_Bool delete_table(Table* data) {
+	data->nb_reg = 0;
+	return false;
 }
 
 /* FONCTION PRINCIPALE */
@@ -163,24 +225,16 @@ int main() {
 	Table		data;														// Déclaration d'un pointeur sur Table (structure)
 	Commande	info;														// Déclaration d'un pointeur sur Commande (structure)
 	char	command[lgMax];													// Déclation d'un tableau de char stocker la commande
-	int		ret, nb_reg = 0;												// ret pour le strcmp() , nb_reg pour le nombre d'enregistrement actuels
+	int		ret;															// ret pour le strcmp() , nb_reg pour le nombre d'enregistrement actuels
 	_Bool	exist = false; 													// Booléen pour existence d'une table
-
-
 																			// Démarage de la boucle infinie pour l'interpréteur de commande
 	while (1) {
 		gets(command);														// Recupération de la commande
 		recup_commande(&info, command);										// Traitement de la commande
 																			// Conditions pour vérifier quelle fonctions éxécuter
-		if ((ret = strcmp(info.champs[0], "Create_table")) == 0) {
-			if (!exist) {
-				create_table(&data, &info);
-				exist = true;
-			}
-			else {
-				printf("table existante\n");
-				continue;
-			}
+		if ((ret = strcmp(info.champs[0], "Create_table")) == 0 && exist != true) {
+			create_table(&data, &info);
+			exist = true;
 		}
 		// Affichage de la table
 		else if ((ret = strcmp(info.champs[0], "Afficher_schema")) == 0) {
@@ -188,19 +242,28 @@ int main() {
 		}
 		// Ajout d'enregistrement
 		else if ((ret = strcmp(info.champs[0], "Insert_enregistrement")) == 0) {
-			insert_enregistrement(&info, &data, nb_reg);
-			++nb_reg;
+			insert_enregistrement(&info, &data, data.nb_reg);
+			data.nb_reg++;
 		}
-		// Afficher l'enregistrement
+		// Afficher les enregistrements
 		else if ((ret = strcmp(info.champs[0], "Afficher_enregistrements")) == 0) {
-			afficher_enregistrements(&data, &info, nb_reg);
+			afficher_enregistrements(&data, &info, data.nb_reg);
 		}
+		// Afficher un enregistrement
 		else if ((ret = strcmp(info.champs[0], "Afficher_enregistrement")) == 0) {
 			afficher_enregistrement(&data, &info);
 		}
+		// Supprimer un enregistrement
 		else if ((ret = strcmp(info.champs[0], "Delete_enregistrement")) == 0) {
-			delete_enregistrement(&data, nb_reg, &info);
-			--nb_reg;
+			delete_enregistrement(&data, data.nb_reg, &info);
+			data.nb_reg--;
+		}
+		// Supprime une table
+		else if ((ret = strcmp(info.champs[0], "Delete_table")) == 0) {
+			exist = delete_table(&data);
+		}
+		else if ((ret = strcmp(info.champs[0], "Select_enregistrement")) == 0) {
+			select_enregistrement(&data, &info);
 		}
 		// Sortie du gestionnaire
 		else if ((ret = strcmp(info.champs[0], "Exit")) == 0) {
