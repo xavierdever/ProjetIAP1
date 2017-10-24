@@ -12,11 +12,39 @@ Groupe :				Date de création :
 
 typedef enum {DATE, FLOAT, INT, TEXT, ERR}Type;
 
+void convert_to_date(const char dateStr[lgMot + 1], Date* date) {
+	char mot[lgMot + 1];
 
-void	select_date(Table* data, Commande* info) {
+	date->jour = atoi(strncpy(mot, dateStr, 2)); 
+	date->mois = atoi(strncpy(mot, dateStr+3, 2));
+	date->annee = atoi(strncpy(mot, dateStr+6, 4));
+}
 
-	for (unsigned int d = 0; d < data->nb_reg; d++) {
+void	select_date(Table* data, const Commande* info) {
+	unsigned int d = 0, reg_num = 0;
+	Date	datedeb, datefin;
+	convert_to_date(info->champs[2], &datefin);
+	convert_to_date(info->champs[3], &datedeb);
 
+	for (; d < data->nb_reg && reg_num < data->nb_reg; ++d, ++reg_num) {
+		if ((datedeb.annee < data->reg[reg_num].date[d].annee) &&
+			(datefin.annee > data->reg[reg_num].date[d].annee)) {
+			//print
+		}
+		else if ((datedeb.annee == data->reg[reg_num].date[d].annee) ||
+			(datefin.annee == data->reg[reg_num].date[d].annee)) {
+			if ((datedeb.mois < data->reg[reg_num].date[d].mois) ||
+				(datefin.mois > data->reg[reg_num].date[d].mois)) {
+				//print
+			}
+			else if ((datedeb.mois == data->reg[reg_num].date[d].mois) ||
+				(datefin.mois == data->reg[reg_num].date[d].mois)) {
+				if ((datedeb.jour < data->reg[reg_num].date[d].jour) ||
+					(datefin.jour > data->reg[reg_num].date[d].jour)) {
+					//print
+				}
+			}
+		}
 	}
 }
 
@@ -81,20 +109,19 @@ void delete_enregistrement(Table* data, int nb_reg, const Commande* info) {
 //	Fonction d'affichage d'un seul enregistrement
 // [in] data -> table de donnée stockant les enregistrements
 // [in] info -> informations sur la commande
-void afficher_enregistrement(const Table *data, const Commande *info) {
-	int	reg_num, d = 0;
+void afficher_enregistrement(const Table *data, Commande * info, unsigned int reg_num) {
+	int	d = 0;
 	if (strcmp(data->nom, info->champs[1]) != 0) {
 		printf("table inconnue\n");
 		return;
 	}
-	reg_num = atoi(info->champs[2]);
 	printf("%d ", reg_num);
 	for (int i = 0; i < data->nbChamps; ++i) {
 		printf("%s ", data->schema[i].champType);
 		if (strcmp(data->schema[i].champType, "DATE") == 0) {
 			printf("%u/%02d/%d ", data->reg[reg_num - 1].date[d].jour,
 				data->reg[reg_num - 1].date[d].mois,
-				data->reg[reg_num - 1].date[d].année);
+				data->reg[reg_num - 1].date[d].annee);
 			d++;
 		}
 		else
@@ -115,9 +142,7 @@ void insert_enregistrement(const Commande *info, Table *data, const int nb_reg) 
 	}
 	for (unsigned int i = 2, j = 0; i < info->NbChps; ++i, ++j) {
 		if (strncmp(data->schema[j].champType, "DATE", 4) == 0) {
-			data->reg[nb_reg].date[d].jour = atoi(strncpy(mot, info->champs[i], 2));
-			data->reg[nb_reg].date[d].mois = atoi(strncpy(mot, info->champs[i] + 3, 2));
-			data->reg[nb_reg].date[d].année = atoi(strncpy(mot, info->champs[i] + 6, 4));
+			convert_to_date(info->champs[i], &data->reg[nb_reg].date[d]);
 			d++;
 		}
 		else
@@ -143,7 +168,7 @@ void afficher_enregistrements(const Table* data, const Commande* info, const int
 			if (strcmp(data->schema[aux].champType, "DATE") == 0) {
 				printf("%u/%02u/%d ", data->reg[tmp].date[aux].jour,
 					data->reg[tmp].date[aux].mois,
-					data->reg[tmp].date[aux].année);
+					data->reg[tmp].date[aux].annee);
 			}
 			printf("%s ", data->reg[tmp].enregistrement[aux]);				// On affiche le nom de l'enregistrement en question
 		}
@@ -251,7 +276,7 @@ int main() {
 		}
 		// Afficher un enregistrement
 		else if ((ret = strcmp(info.champs[0], "Afficher_enregistrement")) == 0) {
-			afficher_enregistrement(&data, &info);
+			afficher_enregistrement(&data, &info, atoi(info.champs[2]));
 		}
 		// Supprimer un enregistrement
 		else if ((ret = strcmp(info.champs[0], "Delete_enregistrement")) == 0) {
